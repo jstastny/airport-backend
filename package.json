@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Airport management API with review system",
   "scripts": {
-    "dev": "vercel dev",
     "build": "tsc",
     "deploy": "vercel --prod",
     "init-db": "tsx scripts/init-db.ts",

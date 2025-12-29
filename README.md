@@ -85,7 +85,7 @@ vercel link
 vercel env pull .env.local
 
 # Start development server
-npm run dev
+vercel dev
 ```
 
 The API will be available at `http://localhost:3000`.
