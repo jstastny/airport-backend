@@ -1,40 +1,60 @@
-import { Pool } from 'pg';
+// Detect if running on Vercel (VERCEL env var is only set on Vercel infrastructure)
+const isVercel = process.env.VERCEL === '1';
 
-// Create a custom SQL tagged template that works with both pg and Vercel
-let pool: Pool | null = null;
+// Type definition for SQL function
+type SQLFunction = {
+  (strings: TemplateStringsArray, ...values: any[]): Promise<{ rows: any[]; rowCount: number | null }>;
+  query: (queryText: string, params?: any[]) => Promise<{ rows: any[]; rowCount: number | null }>;
+};
 
-function getPool() {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: process.env.POSTGRES_URL,
-    });
+let sqlInstance: SQLFunction;
+
+if (isVercel) {
+  // On Vercel: Use @vercel/postgres
+  const { sql: vercelSql } = require('@vercel/postgres');
+  sqlInstance = vercelSql as SQLFunction;
+} else {
+  // Local development: Use pg library
+  const { Pool } = require('pg');
+  let pool: any = null;
+
+  function getPool() {
+    if (!pool) {
+      pool = new Pool({
+        connectionString: process.env.POSTGRES_URL,
+      });
+    }
+    return pool;
   }
-  return pool;
+
+  // Create SQL tagged template function
+  const localSql = async (strings: TemplateStringsArray, ...values: any[]) => {
+    const client = getPool();
+
+    // Build the query by replacing template placeholders with $1, $2, etc.
+    let query = strings[0];
+    const params: any[] = [];
+
+    for (let i = 0; i < values.length; i++) {
+      query += `$${i + 1}` + strings[i + 1];
+      params.push(values[i]);
+    }
+
+    const result = await client.query(query, params);
+    return { rows: result.rows, rowCount: result.rowCount };
+  };
+
+  // Add query method for non-template queries
+  localSql.query = async (queryText: string, params?: any[]) => {
+    const client = getPool();
+    const result = await client.query(queryText, params || []);
+    return { rows: result.rows, rowCount: result.rowCount };
+  };
+
+  sqlInstance = localSql as SQLFunction;
 }
 
-// SQL tagged template function that mimics @vercel/postgres behavior
-export const sql = async (strings: TemplateStringsArray, ...values: any[]) => {
-  const client = getPool();
-
-  // Build the query by replacing template placeholders with $1, $2, etc.
-  let query = strings[0];
-  const params: any[] = [];
-
-  for (let i = 0; i < values.length; i++) {
-    query += `$${i + 1}` + strings[i + 1];
-    params.push(values[i]);
-  }
-
-  const result = await client.query(query, params);
-  return { rows: result.rows, rowCount: result.rowCount };
-};
-
-// Also support the query method for non-template queries
-sql.query = async (queryText: string, params?: any[]) => {
-  const client = getPool();
-  const result = await client.query(queryText, params || []);
-  return { rows: result.rows, rowCount: result.rowCount };
-};
+export const sql = sqlInstance;
 
 export interface Airport {
   id: number;
