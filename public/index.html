@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airport Backend API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 { color: #333; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Airport Backend API</h1>
+    <p>RESTful API for managing airports with a review system.</p>
+
+    <h2>Public Endpoints</h2>
+    <div class="endpoint">
+        <strong>GET /api/airports</strong><br>
+        Get all approved airports
+    </div>
+    <div class="endpoint">
+        <strong>POST /api/airports/suggest</strong><br>
+        Submit a new airport suggestion
+    </div>
+
+    <h2>Admin Endpoints</h2>
+    <p>Require <code>Authorization: Bearer YOUR_API_KEY</code> header</p>
+    <div class="endpoint">
+        <strong>GET /api/airports/pending</strong><br>
+        Get all pending airport suggestions
+    </div>
+    <div class="endpoint">
+        <strong>POST /api/airports/approve</strong><br>
+        Approve or reject an airport suggestion
+    </div>
+    <div class="endpoint">
+        <strong>POST /api/airports/create</strong><br>
+        Directly create a new airport
+    </div>
+
+    <h2>Documentation</h2>
+    <p>View full API documentation on <a href="https://github.com/jstastny/airport-backend">GitHub</a></p>
+</body>
+</html>
