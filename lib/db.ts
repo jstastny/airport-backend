@@ -1,5 +1,8 @@
-// Detect if running on Vercel (VERCEL env var is only set on Vercel infrastructure)
-const isVercel = process.env.VERCEL === '1';
+// Detect if we should use Vercel's postgres client
+// Check if connecting to Vercel's database by looking for vercel-storage.com in the connection string
+const isVercelDb =
+  process.env.VERCEL === '1' ||
+  (process.env.POSTGRES_URL && process.env.POSTGRES_URL.includes('vercel-storage.com'));
 
 // Type definition for SQL function
 type SQLFunction = {
@@ -9,12 +12,12 @@ type SQLFunction = {
 
 let sqlInstance: SQLFunction;
 
-if (isVercel) {
-  // On Vercel: Use @vercel/postgres
+if (isVercelDb) {
+  // Connecting to Vercel Postgres: Use @vercel/postgres
   const { sql: vercelSql } = require('@vercel/postgres');
   sqlInstance = vercelSql as SQLFunction;
 } else {
-  // Local development: Use pg library
+  // Local development with local Postgres: Use pg library
   const { Pool } = require('pg');
   let pool: any = null;
 
