@@ -1,5 +1,12 @@
 {
-  "buildCommand": null,
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@3"
+    },
+    "index.ts": {
+      "runtime": "@vercel/node@3"
+    }
+  },
   "headers": [
     {
       "source": "/api/(.*)",
