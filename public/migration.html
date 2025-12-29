@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airport Migration Export</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            color: #4ec9b0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .btn:hover {
+            background: #1177bb;
+        }
+        .btn-success {
+            background: #16825d;
+        }
+        .btn-success:hover {
+            background: #1a9870;
+        }
+        .login-container {
+            max-width: 500px;
+            margin: 100px auto;
+            background: #252526;
+            padding: 40px;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #cccccc;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            background: #3c3c3c;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #d4d4d4;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .error {
+            background: #5a1d1d;
+            color: #f48771;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #be1100;
+        }
+        .code-container {
+            background: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .code-header {
+            background: #252526;
+            padding: 10px 20px;
+            border-bottom: 1px solid #3c3c3c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-title {
+            color: #cccccc;
+            font-size: 14px;
+        }
+        .copy-btn {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: inherit;
+        }
+        .copy-btn:hover {
+            background: #1177bb;
+        }
+        .copy-btn.copied {
+            background: #16825d;
+        }
+        pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .sql-keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+        .sql-string {
+            color: #ce9178;
+        }
+        .sql-number {
+            color: #b5cea8;
+        }
+        .sql-comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+        .stats {
+            background: #252526;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 30px;
+            color: #cccccc;
+            font-size: 14px;
+        }
+        .stat-item {
+            display: flex;
+            gap: 10px;
+        }
+        .stat-label {
+            color: #858585;
+        }
+        .stat-value {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #858585;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #858585;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <h1 style="margin-bottom: 20px;">Migration Export Login</h1>
+        <div id="loginError" class="error hidden"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="password">Admin API Key</label>
+                <input type="password" id="password" placeholder="Enter your admin API key" required>
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">Login</button>
+        </form>
+    </div>
+
+    <!-- Export Panel -->
+    <div id="exportPanel" class="hidden">
+        <div class="container">
+            <div class="header">
+                <h1>// Airport Migration Export</h1>
+                <div class="controls">
+                    <button class="btn" onclick="loadData()">Refresh</button>
+                    <button class="btn btn-success" onclick="copyAll()">Copy All</button>
+                </div>
+            </div>
+
+            <div id="stats" class="stats hidden">
+                <div class="stat-item">
+                    <span class="stat-label">Pending suggestions:</span>
+                    <span class="stat-value" id="pendingCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total statements:</span>
+                    <span class="stat-value" id="statementCount">0</span>
+                </div>
+            </div>
+
+            <div id="codeContainer" class="code-container">
+                <div class="code-header">
+                    <span class="code-title">migration.sql</span>
+                    <button class="copy-btn" onclick="copyCode()">Copy</button>
+                </div>
+                <pre id="codeContent"><div class="loading">Loading pending suggestions...</div></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = null;
+        const API_BASE = window.location.origin;
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = sessionStorage.getItem('adminApiKey');
+            if (savedKey) {
+                apiKey = savedKey;
+                showExportPanel();
+            }
+        });
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/airports/pending`, {
+                    headers: { 'Authorization': `Bearer ${password}` }
+                });
+
+                if (response.ok) {
+                    apiKey = password;
+                    sessionStorage.setItem('adminApiKey', password);
+                    showExportPanel();
+                } else {
+                    showLoginError('Invalid API key');
+                }
+            } catch (error) {
+                showLoginError('Failed to connect to API');
+            }
+        });
+
+        function showLoginError(message) {
+            const errorEl = document.getElementById('loginError');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+
+        function showExportPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('exportPanel').classList.remove('hidden');
+            loadData();
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch(`${API_BASE}/api/airports/pending`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.suggestions) {
+                    renderSQL(data.suggestions);
+                    updateStats(data.suggestions.length);
+                } else {
+                    showError('Failed to load suggestions');
+                }
+            } catch (error) {
+                showError('Failed to connect to API');
+            }
+        }
+
+        function renderSQL(suggestions) {
+            const codeContent = document.getElementById('codeContent');
+
+            if (suggestions.length === 0) {
+                codeContent.innerHTML = '<div class="empty-state">No pending suggestions to export</div>';
+                return;
+            }
+
+            const sql = generateSQL(suggestions);
+            codeContent.innerHTML = highlightSQL(sql);
+        }
+
+        function generateSQL(suggestions) {
+            let sql = `-- Airport Database Migration\n`;
+            sql += `-- Generated: ${new Date().toISOString()}\n`;
+            sql += `-- Pending suggestions: ${suggestions.length}\n\n`;
+
+            suggestions.forEach((s, index) => {
+                sql += `-- Suggestion #${s.id}: ${s.name}\n`;
+                sql += `INSERT INTO airports (\n`;
+                sql += `  icao_code,\n`;
+                if (s.iata_code) sql += `  iata_code,\n`;
+                sql += `  name`;
+                if (s.city) sql += `,\n  city`;
+                if (s.country) sql += `,\n  country`;
+                if (s.latitude) sql += `,\n  latitude,\n  longitude`;
+                if (s.elevation) sql += `,\n  elevation`;
+                if (s.timezone) sql += `,\n  timezone`;
+                sql += `\n) VALUES (\n`;
+                sql += `  '${escapeSQL(s.icao_code)}'`;
+                if (s.iata_code) sql += `,\n  '${escapeSQL(s.iata_code)}'`;
+                sql += `,\n  '${escapeSQL(s.name)}'`;
+                if (s.city) sql += `,\n  '${escapeSQL(s.city)}'`;
+                if (s.country) sql += `,\n  '${escapeSQL(s.country)}'`;
+                if (s.latitude) sql += `,\n  ${s.latitude},\n  ${s.longitude}`;
+                if (s.elevation) sql += `,\n  ${s.elevation}`;
+                if (s.timezone) sql += `,\n  '${escapeSQL(s.timezone)}'`;
+                sql += `\n);\n\n`;
+            });
+
+            return sql;
+        }
+
+        function highlightSQL(sql) {
+            return sql
+                .replace(/--.*$/gm, match => `<span class="sql-comment">${escapeHtml(match)}</span>`)
+                .replace(/\b(INSERT|INTO|VALUES|SELECT|FROM|WHERE|AND|OR|ON|CONFLICT|DO|UPDATE|SET)\b/gi,
+                    match => `<span class="sql-keyword">${match}</span>`)
+                .replace(/'([^']*)'/g, match => `<span class="sql-string">${escapeHtml(match)}</span>`)
+                .replace(/\b(\d+\.?\d*)\b/g, match => `<span class="sql-number">${match}</span>`);
+        }
+
+        function updateStats(count) {
+            document.getElementById('pendingCount').textContent = count;
+            document.getElementById('statementCount').textContent = count;
+            document.getElementById('stats').classList.remove('hidden');
+        }
+
+        async function copyCode() {
+            const code = document.getElementById('codeContent').textContent;
+            await navigator.clipboard.writeText(code);
+
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+
+        async function copyAll() {
+            await copyCode();
+        }
+
+        function escapeSQL(str) {
+            return str ? str.replace(/'/g, "''") : '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            const codeContent = document.getElementById('codeContent');
+            codeContent.innerHTML = `<div class="empty-state" style="color: #f48771;">${escapeHtml(message)}</div>`;
+        }
+    </script>
+</body>
+</html>
