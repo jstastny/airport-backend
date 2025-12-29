@@ -124,13 +124,57 @@ npx tsx scripts/init-db.ts
 
 Or you can run the SQL directly in Vercel Postgres dashboard using the `schema.sql` file.
 
-### 6. Deploy
+### 6. Deploy to Vercel
 
-Deploy to Vercel:
+#### Option A: Deploy from GitHub (Recommended)
+
+1. **Push to GitHub:**
+   ```bash
+   git remote add origin https://github.com/yourusername/airport-backend.git
+   git push -u origin master
+   ```
+
+2. **Import to Vercel:**
+   - Go to [vercel.com](https://vercel.com)
+   - Click "Add New" → "Project"
+   - Import your GitHub repository
+   - Vercel will auto-detect the project settings
+
+3. **Add Postgres Database:**
+   - In your Vercel project dashboard, go to "Storage" tab
+   - Click "Create Database" → "Postgres"
+   - Click "Connect" to link it to your project
+
+4. **Add Environment Variable:**
+   - Go to "Settings" → "Environment Variables"
+   - Add `ADMIN_API_KEY` with your secret key
+   - Add it for Production, Preview, and Development environments
+
+5. **Initialize Database:**
+   ```bash
+   # Pull production environment variables
+   vercel env pull .env.production
+
+   # Run the initialization script
+   npm run init-db
+
+   # Import sample data (optional)
+   npm run import-airports
+   ```
+
+6. **Your API is live!** Visit your Vercel URL (e.g., `https://your-project.vercel.app/api/airports`)
+
+#### Option B: Deploy via CLI
 
 ```bash
+# First time setup
+vercel
+
+# Deploy to production
 vercel --prod
 ```
+
+After deployment, follow steps 3-5 from Option A to set up the database.
 
 ## API Documentation
 
