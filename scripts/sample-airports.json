@@ -1,0 +1,57 @@
+[
+  {
+    "icao_code": "KLAX",
+    "iata_code": "LAX",
+    "name": "Los Angeles International Airport",
+    "city": "Los Angeles",
+    "country": "United States",
+    "latitude": 33.9425,
+    "longitude": -118.408,
+    "elevation": 125,
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "icao_code": "KJFK",
+    "iata_code": "JFK",
+    "name": "John F. Kennedy International Airport",
+    "city": "New York",
+    "country": "United States",
+    "latitude": 40.6413,
+    "longitude": -73.7781,
+    "elevation": 13,
+    "timezone": "America/New_York"
+  },
+  {
+    "icao_code": "EGLL",
+    "iata_code": "LHR",
+    "name": "London Heathrow Airport",
+    "city": "London",
+    "country": "United Kingdom",
+    "latitude": 51.4700,
+    "longitude": -0.4543,
+    "elevation": 83,
+    "timezone": "Europe/London"
+  },
+  {
+    "icao_code": "RJTT",
+    "iata_code": "HND",
+    "name": "Tokyo Haneda Airport",
+    "city": "Tokyo",
+    "country": "Japan",
+    "latitude": 35.5494,
+    "longitude": 139.7798,
+    "elevation": 35,
+    "timezone": "Asia/Tokyo"
+  },
+  {
+    "icao_code": "YSSY",
+    "iata_code": "SYD",
+    "name": "Sydney Kingsford Smith Airport",
+    "city": "Sydney",
+    "country": "Australia",
+    "latitude": -33.9461,
+    "longitude": 151.1772,
+    "elevation": 21,
+    "timezone": "Australia/Sydney"
+  }
+]

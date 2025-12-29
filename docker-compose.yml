@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: airport-db
+    environment:
+      POSTGRES_USER: airport_user
+      POSTGRES_PASSWORD: airport_pass
+      POSTGRES_DB: airport_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airport_user -d airport_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: airport-api
+    ports:
+      - "3333:3333"
+    environment:
+      - POSTGRES_URL=postgres://airport_user:airport_pass@postgres:5432/airport_db
+      - POSTGRES_PRISMA_URL=postgres://airport_user:airport_pass@postgres:5432/airport_db?pgbouncer=true&connect_timeout=15
+      - POSTGRES_URL_NON_POOLING=postgres://airport_user:airport_pass@postgres:5432/airport_db
+      - POSTGRES_USER=airport_user
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=airport_pass
+      - POSTGRES_DATABASE=airport_db
+      - ADMIN_API_KEY=local-dev-admin-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
