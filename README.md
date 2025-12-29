@@ -16,165 +16,79 @@ A Vercel-based backend API for managing airports with a review system. This API 
 - **Database**: Vercel Postgres
 - **Authentication**: Bearer token for admin endpoints
 
-## Quick Start with Docker
+## Deployment
 
-The fastest way to run the project locally is with Docker Compose:
-
-```bash
-# Start all services (PostgreSQL + API on port 3333)
-docker-compose up -d
-
-# Wait a few seconds for services to initialize, then import sample data
-./docker-init.sh
-
-# Or manually import:
-docker exec -it airport-api npm run import-airports
-```
-
-Your API will be available at **http://localhost:3333**
-
-**Default credentials:**
-- Admin API Key: `local-dev-admin-key-change-in-production`
-- Database: `airport_db` (user: `airport_user`, password: `airport_pass`)
-
-**Useful commands:**
-```bash
-# View logs
-docker-compose logs -f app
-
-# Stop services
-docker-compose down
-
-# Reset database (removes all data)
-docker-compose down -v
-docker-compose up -d
-```
-
-**Test the API:**
-```bash
-# Get all airports
-curl http://localhost:3333/api/airports
-
-# Submit a suggestion
-curl -X POST http://localhost:3333/api/airports/suggest \
-  -H "Content-Type: application/json" \
-  -d '{"icao_code":"TEST","name":"Test Airport"}'
-
-# View pending suggestions (admin)
-curl http://localhost:3333/api/airports/pending \
-  -H "Authorization: Bearer local-dev-admin-key-change-in-production"
-```
-
-## Setup (Manual/Vercel Deployment)
-
-### 1. Prerequisites
-
-- Node.js 18+ installed
-- Vercel account
-- Vercel CLI installed (`npm i -g vercel`)
-
-### 2. Install Dependencies
+### 1. Push to GitHub
 
 ```bash
-npm install
+git remote add origin https://github.com/yourusername/airport-backend.git
+git push -u origin master
 ```
 
-### 3. Set Up Vercel Postgres
+### 2. Import to Vercel
 
-1. Create a new Vercel project or link existing one:
-   ```bash
-   vercel link
-   ```
+1. Go to [vercel.com](https://vercel.com)
+2. Click "Add New" → "Project"
+3. Import your GitHub repository
+4. Vercel will auto-detect the settings
+5. Click "Deploy"
 
-2. Add Vercel Postgres to your project:
-   - Go to your project in Vercel Dashboard
-   - Navigate to Storage tab
-   - Click "Create Database" → "Postgres"
-   - Follow the setup wizard
+### 3. Add Postgres Database
 
-3. Pull environment variables locally:
-   ```bash
-   vercel env pull .env.local
-   ```
+1. In your Vercel project dashboard, go to "Storage" tab
+2. Click "Create Database" → "Postgres"
+3. Click "Connect" to link it to your project
+4. Vercel will automatically redeploy with the database environment variables
 
-### 4. Configure Environment Variables
+### 4. Add Environment Variable
 
-1. Copy `.env.example` to `.env.local`:
-   ```bash
-   cp .env.example .env.local
-   ```
-
-2. Add your admin API key to `.env.local`:
-   ```
-   ADMIN_API_KEY=your-secret-admin-key-here
-   ```
-
-3. Make sure to add `ADMIN_API_KEY` to your Vercel project environment variables:
-   ```bash
-   vercel env add ADMIN_API_KEY
-   ```
+1. Go to "Settings" → "Environment Variables"
+2. Add `ADMIN_API_KEY` with your secret key
+3. Add it for Production, Preview, and Development environments
+4. Vercel will redeploy automatically
 
 ### 5. Initialize Database
 
-Run the database initialization script to create tables:
+Pull the environment variables locally and run the initialization scripts:
 
 ```bash
-npx tsx scripts/init-db.ts
+# Install dependencies
+npm install
+
+# Pull production environment variables
+vercel env pull .env.local
+
+# Initialize database schema
+npm run init-db
+
+# Import sample data (optional)
+npm run import-airports
 ```
 
-Or you can run the SQL directly in Vercel Postgres dashboard using the `schema.sql` file.
+### 6. Your API is Live!
 
-### 6. Deploy to Vercel
+Visit your Vercel URL to test the API:
+- `https://your-project.vercel.app/api/airports`
 
-#### Option A: Deploy from GitHub (Recommended)
+## Local Development
 
-1. **Push to GitHub:**
-   ```bash
-   git remote add origin https://github.com/yourusername/airport-backend.git
-   git push -u origin master
-   ```
-
-2. **Import to Vercel:**
-   - Go to [vercel.com](https://vercel.com)
-   - Click "Add New" → "Project"
-   - Import your GitHub repository
-   - Vercel will auto-detect the project settings
-
-3. **Add Postgres Database:**
-   - In your Vercel project dashboard, go to "Storage" tab
-   - Click "Create Database" → "Postgres"
-   - Click "Connect" to link it to your project
-
-4. **Add Environment Variable:**
-   - Go to "Settings" → "Environment Variables"
-   - Add `ADMIN_API_KEY` with your secret key
-   - Add it for Production, Preview, and Development environments
-
-5. **Initialize Database:**
-   ```bash
-   # Pull production environment variables
-   vercel env pull .env.production
-
-   # Run the initialization script
-   npm run init-db
-
-   # Import sample data (optional)
-   npm run import-airports
-   ```
-
-6. **Your API is live!** Visit your Vercel URL (e.g., `https://your-project.vercel.app/api/airports`)
-
-#### Option B: Deploy via CLI
+To run locally with Vercel Dev:
 
 ```bash
-# First time setup
-vercel
+# Install dependencies
+npm install
 
-# Deploy to production
-vercel --prod
+# Link to your Vercel project
+vercel link
+
+# Pull environment variables
+vercel env pull .env.local
+
+# Start development server
+npm run dev
 ```
 
-After deployment, follow steps 3-5 from Option A to set up the database.
+The API will be available at `http://localhost:3000`.
 
 ## API Documentation
 
@@ -400,30 +314,6 @@ Stores approved airports that are served via the public API.
 Stores pending, approved, and rejected airport suggestions.
 
 See `schema.sql` for the complete database schema.
-
-## Development
-
-### Local Development (Standalone Server)
-
-Run the standalone Express server (no Vercel CLI required):
-
-```bash
-npm run dev
-```
-
-The API will be available at `http://localhost:3333`.
-
-This uses a lightweight Express server that wraps the Vercel serverless functions, making local development easier without requiring Vercel authentication.
-
-### Testing with Vercel Dev
-
-If you want to test with the actual Vercel runtime (requires `vercel login`):
-
-```bash
-npm run dev:vercel
-```
-
-The API will be available at `http://localhost:3000`.
 
 ## Bulk Import
 
