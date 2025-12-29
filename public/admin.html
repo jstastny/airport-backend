@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airport Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .logout-btn:hover {
+            background: #c82333;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+        .suggestions-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .suggestion-card {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestion-card:last-child {
+            border-bottom: none;
+        }
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .suggestion-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .suggestion-code {
+            color: #666;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        .suggestion-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .approve-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .approve-btn:hover {
+            background: #218838;
+        }
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .reject-btn:hover {
+            background: #c82333;
+        }
+        .suggestion-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .detail-item {
+            display: flex;
+            gap: 5px;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #555;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <h2>Admin Login</h2>
+        <div id="loginError" class="error hidden"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="password">API Key</label>
+                <input type="password" id="password" placeholder="Enter your admin API key" required>
+            </div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden">
+        <div class="container">
+            <div class="header">
+                <h1>Airport Suggestions Admin</h1>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div id="message" class="hidden"></div>
+
+            <div id="suggestionsContainer" class="suggestions-list">
+                <div class="loading">Loading pending suggestions...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = null;
+        const API_BASE = window.location.origin;
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = sessionStorage.getItem('adminApiKey');
+            if (savedKey) {
+                apiKey = savedKey;
+                showAdminPanel();
+            }
+        });
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+
+            // Test the API key by trying to fetch pending suggestions
+            try {
+                const response = await fetch(`${API_BASE}/api/airports/pending`, {
+                    headers: {
+                        'Authorization': `Bearer ${password}`
+                    }
+                });
+
+                if (response.ok) {
+                    apiKey = password;
+                    sessionStorage.setItem('adminApiKey', password);
+                    showAdminPanel();
+                } else {
+                    showLoginError('Invalid API key');
+                }
+            } catch (error) {
+                showLoginError('Failed to connect to API');
+            }
+        });
+
+        function showLoginError(message) {
+            const errorEl = document.getElementById('loginError');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadPendingSuggestions();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('adminApiKey');
+            apiKey = null;
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('password').value = '';
+        }
+
+        async function loadPendingSuggestions() {
+            try {
+                const response = await fetch(`${API_BASE}/api/airports/pending`, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.suggestions) {
+                    renderSuggestions(data.suggestions);
+                } else {
+                    showError('Failed to load suggestions');
+                }
+            } catch (error) {
+                showError('Failed to connect to API');
+            }
+        }
+
+        function renderSuggestions(suggestions) {
+            const container = document.getElementById('suggestionsContainer');
+
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3>No pending suggestions</h3>
+                        <p>All caught up!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = suggestions.map(s => `
+                <div class="suggestion-card" data-id="${s.id}">
+                    <div class="suggestion-header">
+                        <div>
+                            <div class="suggestion-title">${escapeHtml(s.name)}</div>
+                            <div class="suggestion-code">${escapeHtml(s.icao_code)}${s.iata_code ? ' / ' + escapeHtml(s.iata_code) : ''}</div>
+                        </div>
+                        <div class="suggestion-actions">
+                            <button class="approve-btn" onclick="handleAction(${s.id}, 'approve')">Approve</button>
+                            <button class="reject-btn" onclick="handleAction(${s.id}, 'reject')">Reject</button>
+                        </div>
+                    </div>
+                    <div class="suggestion-details">
+                        ${s.city ? `<div class="detail-item"><span class="detail-label">City:</span><span>${escapeHtml(s.city)}</span></div>` : ''}
+                        ${s.country ? `<div class="detail-item"><span class="detail-label">Country:</span><span>${escapeHtml(s.country)}</span></div>` : ''}
+                        ${s.latitude ? `<div class="detail-item"><span class="detail-label">Coordinates:</span><span>${s.latitude}, ${s.longitude}</span></div>` : ''}
+                        ${s.elevation ? `<div class="detail-item"><span class="detail-label">Elevation:</span><span>${s.elevation} ft</span></div>` : ''}
+                        ${s.timezone ? `<div class="detail-item"><span class="detail-label">Timezone:</span><span>${escapeHtml(s.timezone)}</span></div>` : ''}
+                        <div class="detail-item"><span class="detail-label">Submitted:</span><span>${new Date(s.submitted_at).toLocaleString()}</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleAction(id, action) {
+            try {
+                const response = await fetch(`${API_BASE}/api/airports/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({ id, action })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess(action === 'approve' ? 'Airport approved!' : 'Suggestion rejected');
+                    // Remove the card from the UI
+                    const card = document.querySelector(`[data-id="${id}"]`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transition = 'opacity 0.3s';
+                        setTimeout(() => {
+                            loadPendingSuggestions();
+                        }, 300);
+                    }
+                } else {
+                    showError(data.error || 'Action failed');
+                }
+            } catch (error) {
+                showError('Failed to process action');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = message;
+            messageEl.className = type;
+            messageEl.classList.remove('hidden');
+            setTimeout(() => {
+                messageEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showSuccess(message) {
+            showMessage(message, 'success');
+        }
+
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
